@@ -1,3 +1,5 @@
+#https://github.com/SiddGururani/Pytorch-TDNN/blob/master/TDNN.py
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -46,8 +48,11 @@ class TDNN(nn.Module):
         """
         input_size = x.size()
         assert len(input_size) == 3, 'Input tensor dimensionality is incorrect. Should be a 3D tensor'
-        [batch_size, input_sequence_length, input_dim] = input_size
-        x = x.transpose(1,2).contiguous()
+
+        # [batch_size, input_sequence_length, input_dim] = input_size
+        # x = x.transpose(1,2).contiguous()
+        [batch_size, input_dim, input_sequence_length] = input_size
+        x = x.contiguous()
 
         # Allocate memory for output
         valid_steps = self.get_valid_steps(self.context, input_sequence_length)
@@ -75,3 +80,26 @@ class TDNN(nn.Module):
         start = 0 if context[0] >= 0 else -1*context[0]
         end = input_sequence_length if context[-1] <= 0 else input_sequence_length - context[-1]
         return range(start, end)
+
+if __name__ == "__main__":
+    # For the model specified in the Waibel et al. paper, the first layer is as follows:
+    context = [0, 2]
+    input_dim = 16
+    output_dim = 8
+    net1 = TDNN(context, input_dim, output_dim, full_context=True)
+
+    # For the model specified in the Peddinti et al. paper, the second layer is as follows (taking arbitrary I/O dimensions since it's not specified):
+    context = [-1, 2]
+    input_dim = 16
+    output_dim = 8
+    net2 = TDNN(context, input_dim, output_dim, full_context=False)
+
+    # You may also use any arbitrary context like this:
+    context = [-11, 0, 5, 7, 10]
+    input_dim = 16
+    output_dim = 8
+    net3 = TDNN(context, input_dim, output_dim, full_context=False)
+
+    # The above will convole the kernel with the current frame, 11 frames in the past, 5, 7, and 10 frames in the future.
+    batch = torch.rand(20, 16, 100)
+    output = net1(batch)  # this will run a forward pass
