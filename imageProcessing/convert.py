@@ -1,5 +1,9 @@
 
 #!/usr/bin/env python3.6
+# to run it against a single tiff file:
+# python convert.py file.tiff
+# to run it against a folder of tiff files:
+# python convert.py path_to_tiff_folder path_to_output_folder
 import os, sys
 from PIL import Image
 Image.MAX_IMAGE_PIXELS = None
